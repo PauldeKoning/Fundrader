@@ -1,0 +1,16 @@
+{
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "node-cache": "^5.1.2",
+    "node-html-parser": "^7.0.1",
+    "typescript": "^5.8.3"
+  },
+  "scripts": {
+    "dev": "tsc && node dist/app"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.2"
+  }
+}

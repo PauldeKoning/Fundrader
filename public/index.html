@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Guess the Price</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f4f4f4;
+      height: 100%;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: auto;
+      padding: 1rem;
+    }
+
+    .property-image {
+      width: 100%;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+
+    .details {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .card {
+      flex: 1;
+      background: #fff;
+      padding: 0.75rem;
+      border-radius: 8px;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .card h3 {
+      margin: 0;
+      font-size: 1rem;
+      color: #333;
+    }
+
+    .card p {
+      margin: 0.25rem 0 0 0;
+      font-weight: bold;
+      color: #0071c2;
+    }
+
+    .map {
+      margin: 1rem 0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    iframe {
+      width: 100%;
+      height: 250px;
+      border: none;
+    }
+
+    .guess-section {
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .guess-area {
+      display: flex;
+      flex-direction: row;
+      gap: 1rem;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+
+    .input-box {
+      flex: 1;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 0.5rem;
+      margin-bottom: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+
+    button {
+      width: 100%;
+      padding: 0.5rem;
+      margin-bottom: 0.5rem;
+      font-size: 1rem;
+      background-color: #0071c2;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #005fa3;
+    }
+
+    #nexthousebutton {
+        background-color: #3fa34f;
+        display: none;
+    }
+
+    .guess-list {
+      flex: 1;
+      background: #f9f9f9;
+      padding: 0.5rem;
+      border-radius: 6px;
+      min-height: 70px;
+      font-size: 0.95rem;
+    }
+
+    .guess-list div {
+      margin-bottom: 0.3rem;
+    }
+
+    @media (max-width: 600px) {
+      .guess-area {
+        flex-direction: column;
+      }
+    }
+
+    @media (max-width: 768px) {
+        .guess-container {
+            flex-direction: column;
+        }
+
+        .guess-area, .input-box, .guess-list   {
+            width: 100%;
+        }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div style="position: relative; width: 100%; height: 500px;">
+  <iframe 
+    src="https://www.funda.nl/detail/koop/amsterdam/appartement-medemblikstraat-50-1/43942610/media/foto/1"
+    style="width: 100%; height: 100%; border: none; border-radius: 8px;"
+    id="picturesiframe"
+  ></iframe>
+
+  <div style="
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 40px; /* Adjust height as needed */
+    width: 100%;
+    background: #f4f4f4; /* Or use rgba(255,255,255,0.9) for transparency */
+    z-index: 2;
+    text-align: center;
+  "><h2 style="font-size: 1.5rem; font-weight: 500;">Fundrader</h4></div>
+</div>
+
+
+  <!-- Property detail cards -->
+  <div class="details">
+    <div class="card">
+      <h3>House Size</h3>
+      <p id="sizediv">130 m²</p>
+    </div>
+    <div class="card">
+      <h3>Bedrooms</h3>
+      <p id="bedroomsdiv">2</p>
+    </div>
+    <div class="card">
+      <h3>Built</h3>
+      <p id="builtdiv">2024</p>
+    </div>
+  </div>
+
+  <div class="map">
+    <iframe 
+      src="https://www.openstreetmap.org/export/embed.html?bbox=4.9338%2C52.3925%2C4.9378%2C52.3945&layer=mapnik&marker=52.3935%2C4.9358" 
+      allowfullscreen
+      id="mapiframe"
+    ></iframe>
+  </div>
+
+
+    <div class="guess-section">
+      <div class="guess-area">
+        <div class="input-box">
+          <input type="number" id="priceGuess" placeholder="Your guess (€)" />
+          <button onclick="checkGuess()">Guess</button>
+          <button onclick="nextHouse()" id="nexthousebutton">Next House</button>
+        </div>
+        <div class="guess-list" id="guessHistory">
+          <!-- Guesses will be shown here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+
+    const map = document.getElementById('mapiframe');
+    const pictures = document.getElementById('picturesiframe');
+    const sizediv = document.getElementById('sizediv');
+    const bedroomsdiv = document.getElementById('bedroomsdiv');
+    const builtdiv = document.getElementById('builtdiv');
+    const nexthousebutton = document.getElementById('nexthousebutton');
+    const guessHistory = document.getElementById("guessHistory");
+
+    const guessedIds = [];
+    let currentPrice = 0;
+
+    (async function() {
+        await setNewHouse();
+    })();
+
+
+    function checkGuess() {
+      const guessInput = document.getElementById("priceGuess");
+      const guess = parseInt(guessInput.value, 10);
+
+      if (isNaN(guess)) return;
+
+      let result = "";
+      const error = currentPrice * 0.05;
+      if (guess < currentPrice - error) {
+        result = `⬆️ €${guess.toLocaleString()}`;
+      } else if (guess > currentPrice + error) {
+        result = `⬇️ €${guess.toLocaleString()}`;
+      } else {
+        const diff = calcPercentage(guess, currentPrice);
+        result = `🎉 Correct! - €${currentPrice.toLocaleString()} - ${diff}% off`;
+        nexthousebutton.style.display = 'block';
+      }
+
+      const entry = document.createElement("div");
+      entry.textContent = result;
+      guessHistory.prepend(entry); // Add to top of list
+      guessInput.value = "";
+    }
+
+    function calcPercentage(x, y, fixed = 2) {
+        const percent = ((x - y) / y) * 100;
+        
+        if(!isNaN(percent)){
+            return Math.abs(Number(percent.toFixed(fixed)));
+        }else{
+            return null;
+        }
+    }
+
+    function nextHouse() {
+        nexthousebutton.style.display = 'none';
+        guessHistory.innerHTML = '';
+        void setNewHouse(guessedIds.join(','));
+    }
+
+    async function setNewHouse(used = '') {
+        const result = await fetch('http://localhost:3000/house?used=' + used);
+        const houseJson = await result.json();
+
+        const lat = parseFloat(houseJson.lat);
+        const lon = parseFloat(houseJson.lon);
+        const offset = 0.008;
+
+        const minLat = lat - offset;
+        const maxLat = lat + offset;
+        const minLon = lon - offset;
+        const maxLon = lon + offset;
+
+        const bbox = `${minLon},${minLat},${maxLon},${maxLat}`;
+        const marker = `${lat},${lon}`;
+
+        map.setAttribute('src', `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${marker}`)
+        pictures.setAttribute('src', `https://funda.nl${houseJson.pictures?.at(0)}`);
+        sizediv.innerHTML = houseJson.size + " m²";
+        bedroomsdiv.innerHTML = houseJson.bedrooms || '-';
+        builtdiv.innerHTML = houseJson.buildYear || '-';
+        currentPrice = houseJson.cost;
+
+        guessedIds.push(houseJson.id);
+    }
+  </script>
+</body>
+</html>
